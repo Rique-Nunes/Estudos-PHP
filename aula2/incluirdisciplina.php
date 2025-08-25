@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
         fclose($arqDisc);
     }
     $arqDisc = fopen("disciplinas.txt","a") or die("erro critico na adição no arquivo");
-    $linha = $nome . ";" . $sigla . ";" .$carga.";";
+    $linha = $nome . ";" . $sigla . ";" .$carga."\n";
     fwrite($arqDisc, $linha);
     fclose($arqDisc);
     $msg = "Deu tudo certo";

@@ -1,0 +1,2 @@
+nome;sigla;carga
+Tópicos e paradigmas humanos;TPH;20;

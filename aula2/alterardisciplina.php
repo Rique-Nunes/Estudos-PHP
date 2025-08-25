@@ -1,26 +1,31 @@
 <?php
-$msg = "";
+
+$nome_encontrado = "";
+$sigla_encontrada = "";
+$carga_encontrada = "";
+$encontrou = false; 
+
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST'){
-    $nome = $_POST["nome"];
-    $sigla = $_POST["sigla"];
-    $carga = $_POST["carga"];
+    $sigla_buscada = $_POST["sigla"];
 
-    echo "nome: $nome sigla: $sigla carga: $carga";
-
-    if(!file_exists("disciplinas.txt")){
-
-        $arqDisc = fopen("disciplinas.txt","w") or die("erro crítico na criação do arquivo");
-        $linha = "nome;sigla;carga\n";
-        fwrite($arqDisc, $linha);
-
-        fclose($arqDisc);
-    }
-    $arqDisc = fopen("disciplinas.txt","a") or die("erro critico na adição no arquivo");
-    $linha = $nome . ";" . $sigla . ";" .$carga.";";
-    fwrite($arqDisc, $linha);
-    fclose($arqDisc);
-    $msg = "Deu tudo certo";
+    $arqDisc = fopen("disciplinas.txt","r") or die("ERRO: não consegui abrir o arquivo");
     
+    while(!feof($arqDisc)){
+        $linha = fgets($arqDisc);
+        $colunaDados = explode(";", $linha);
+        
+        if($colunaDados[1] == $sigla_buscada){
+            
+            $nome_encontrado = $colunaDados[0];
+            $sigla_encontrada = $colunaDados[1];
+            $carga_encontrada = $colunaDados[2];
+            $encontrou = true;
+            
+            break; 
+        }
+    }
+    fclose($arqDisc); 
 }
 ?>
 
@@ -55,12 +60,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
 </head>
 <body>
     <form action="alterardisciplina.php" method="POST" name="incluirdisciplina">
+        Sigla da disciplina que quer alterar: <input type="text" name="sigla"><br>
+        <input type="submit" value="Enviar">
+    </form>
+    <form action="alterardisciplina.php" method="POST" name="incluirdisciplina">
         Sigla da disciplina: <input type="text" name="sigla"><br>
-        Carga horária da disciplina: <input type="number" name="carga">
+        Carga horária da disciplina: <input type="number" name="carga"><br>
+        Nome da disciplina: <input type="nome" name="text">
         <input type="submit" value="Enviar">
     </form>
     <?php
-    // Exibe a mensagem de sucesso se a variável $msg não estiver vazia
     if (!empty($msg)) {
         echo "<h1>$msg</h1>";
     }
