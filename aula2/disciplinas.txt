@@ -1,2 +1,3 @@
 nome;sigla;carga
-Tópicos e paradigmas humanos;TPH;20;
+Humanass;TPH;20
+a;DAW;2

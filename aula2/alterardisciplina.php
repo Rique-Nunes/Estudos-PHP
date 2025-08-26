@@ -1,8 +1,8 @@
 <?php
 
-$nome_encontrado = "";
-$sigla_encontrada = "";
-$carga_encontrada = "";
+$nome;
+$sigla;
+$carga;
 $encontrou = false; 
 
 
@@ -15,11 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
         $linha = fgets($arqDisc);
         $colunaDados = explode(";", $linha);
         
-        if($colunaDados[1] == $sigla_buscada){
+        if(isset($colunaDados[1]) && trim($colunaDados[1]) == $sigla_buscada){
             
-            $nome_encontrado = $colunaDados[0];
-            $sigla_encontrada = $colunaDados[1];
-            $carga_encontrada = $colunaDados[2];
+            $nome = $colunaDados[0];
+            $sigla = $colunaDados[1];
+            $carga = $colunaDados[2];
             $encontrou = true;
             
             break; 
@@ -59,20 +59,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
     </style>
 </head>
 <body>
-    <form action="alterardisciplina.php" method="POST" name="incluirdisciplina">
-        Sigla da disciplina que quer alterar: <input type="text" name="sigla"><br>
-        <input type="submit" value="Enviar">
-    </form>
-    <form action="alterardisciplina.php" method="POST" name="incluirdisciplina">
-        Sigla da disciplina: <input type="text" name="sigla"><br>
-        Carga horária da disciplina: <input type="number" name="carga"><br>
-        Nome da disciplina: <input type="nome" name="text">
-        <input type="submit" value="Enviar">
+    <form action="alterardisciplina.php" method="POST">
+        Sigla da disciplina que quer alterar: <br>
+        <input type="text" name="sigla"><br>
+        <input type="submit" value="Buscar Disciplina">
     </form>
     <?php
-    if (!empty($msg)) {
-        echo "<h1>$msg</h1>";
-    }
+    if ($encontrou) {
+            
+            echo '
+            <hr>
+            <form action="salvaralteracao.php" method="POST">
+                <h3>Editando a Disciplina:</h3>
+                
+                Nome da disciplina: <br>
+                <input type="text" name="nome" value="' . $nome . '"><br>
+                
+                Sigla da disciplina (não pode ser alterada): <br>
+                <input type="text" name="sigla" value="' . $sigla . '" readonly><br>
+                
+                Carga horária da disciplina: <br>
+                <input type="text" name="carga" value="' . trim($carga) . '"><br>
+                
+                <input type="submit" value="Salvar Alterações">
+            </form>
+            ';
+        }
     ?>
 </body>
 </html>

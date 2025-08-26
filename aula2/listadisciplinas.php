@@ -11,6 +11,8 @@
         <!--<tr><th>nome</th><th>sigla</th><th>carga</th></tr> -->
     <?php
     $arqDisc = fopen("disciplinas.txt", "r") or die("erro ao abrir");
+    
+    fgets($arqDisc);
 
     while(!feof($arqDisc)){
         $linha = fgets($arqDisc);

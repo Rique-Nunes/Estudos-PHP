@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
         <input type="submit" value="Enviar">
     </form>
     <?php
-    // Exibe a mensagem de sucesso se a variável $msg não estiver vazia
+
     if (!empty($msg)) {
         echo "<h1>$msg</h1>";
     }
