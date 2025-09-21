@@ -1,0 +1,2 @@
+nome;sigla;carga
+HENRIQUE DA COSTA NUNES;DAW;20
