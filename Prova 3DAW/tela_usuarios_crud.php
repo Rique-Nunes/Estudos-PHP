@@ -2,133 +2,150 @@
 $msg = "";
 $arquivo_user = "usuarios.txt";
 
-//criação dos funcionários
-
+// Criação de usuários
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['acao'] == "criar") {
+    $nome = trim($_POST["nome"]);
+    $id = trim($_POST["id"]);
 
-    $nome = $_POST["nome"];
-    $id = $_POST["id"];
-
-    if (!file_exists($arquivo_user)) {
-        $cabecalho = "nome;id\n";
-        $arqDisc = fopen($arquivo_user, "w") or die("Erro não foi possível abrir o arquivo");
-        fwrite($arqDisc, $cabecalho);
-        fclose($arqDisc);
+    $id_existe = false;
+    if (file_exists($arquivo_user)) {
+        $arq = fopen($arquivo_user, "r");
+        fgets($arq);
+        while (!feof($arq)) {
+            $linha = fgets($arq);
+            if (trim($linha) != "") {
+                $dados = explode(";", $linha);
+                if (trim($dados[1]) == $id) {
+                    $id_existe = true;
+                    break;
+                }
+            }
+        }
+        fclose($arq);
     }
-    $arqDisc = fopen($arquivo_user, "a") or die("Erro não foi possível abrir o arquivo");
-    $linha = $nome . ';' . $id . "\n";
-    fwrite($arqDisc, $linha);
-    fclose($arqDisc);
 
-    $msg = "Usuario salvo com sucesso!";
+    if (!$id_existe) {
+        if (!file_exists($arquivo_user)) {
+            $cabecalho = "nome;id\n";
+            $arq = fopen($arquivo_user, "w");
+            fwrite($arq, $cabecalho);
+            fclose($arq);
+        }
+
+        $arq = fopen($arquivo_user, "a");
+        $linha = $nome . ';' . $id . "\n";
+        fwrite($arq, $linha);
+        fclose($arq);
+
+        $msg = "Usuário salvo com sucesso!";
+    } else {
+        $msg = "Erro: ID já existe!";
+    }
 }
 
-//deletar um funcionário
+//Exclusão de usuários
 if (isset($_GET['acao']) && $_GET['acao'] == 'excluir' && isset($_GET['id'])) {
-
     $id_para_deletar = $_GET['id'];
     $encontrou = false;
     $arqSaida = "";
 
     if (file_exists($arquivo_user)) {
+        $arq = fopen($arquivo_user, "r");
+        $cabecalho = fgets($arq);
+        $arqSaida = $cabecalho;
 
-        $arqDisc = fopen($arquivo_user, "r") or die("erro para abrir o arquivo");
-
-        while (!feof($arqDisc)) {
-            $linha = fgets($arqDisc);
-
-
+        while (!feof($arq)) {
+            $linha = fgets($arq);
             if (trim($linha) != "") {
                 $parte = explode(";", $linha);
-
                 if (trim($parte[1]) != $id_para_deletar) {
-
-                    $arqSaida = $arqSaida . $linha;
+                    $arqSaida .= $linha;
                 } else {
                     $encontrou = true;
                 }
             }
         }
-        fclose($arqDisc);
+        fclose($arq);
     }
 
-
-    $arqDisc = fopen($arquivo_user, "w") or die("erro na abertura para escrita");
-    fwrite($arqDisc, $arqSaida);
-    fclose($arqDisc);
+    $arq = fopen($arquivo_user, "w");
+    fwrite($arq, $arqSaida);
+    fclose($arq);
 
     if ($encontrou) {
-        $msg = "Usuário com o id '$id_para_deletar' foi deletado com sucesso!";
+        $msg = "Usuário com ID '$id_para_deletar' foi deletado com sucesso!";
     } else {
-        $msg = "Usuário com o id '$id_para_deletar' não foi encontrado.";
+        $msg = "Usuário com ID '$id_para_deletar' não foi encontrado.";
     }
 }
 
-//abrir opção de alteração
+//Edição de usuários
 $id_para_editar = null;
+$modo_edicao = false;
 
+// Abrir opção de alteração
 if (isset($_GET['acao']) && $_GET['acao'] == 'editar' && isset($_GET['id'])) {
     $id_get = $_GET['id'];
+    $modo_edicao = true;
 
-    $arqDisc = fopen($arquivo_user, "r") or die("erro na abertura do arquivo");
+    if (file_exists($arquivo_user)) {
+        $arq = fopen($arquivo_user, "r");
+        fgets($arq);
 
-    while (!feof($arqDisc)) {
-        $linha = fgets($arqDisc);
-        $parte = explode(";", $linha);
+        while (!feof($arq)) {
+            $linha = fgets($arq);
+            $parte = explode(";", $linha);
 
-        if (isset($parte[1]) && trim($parte[1]) == $id_get) {
-            $id_para_editar = $parte;
-            break;
+            if (isset($parte[1]) && trim($parte[1]) == $id_get) {
+                $id_para_editar = $parte;
+                break;
+            }
         }
+        fclose($arq);
     }
-
-    fclose($arqDisc);
 }
 
-//salvar alteração de um funcionario
-if (isset($_POST['acao']) && $_POST['acao'] == 'salvar' && isset($_POST['id_original'])) {
-
+// Salvar alteração
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['acao'] == 'salvar' && isset($_POST['id_original'])) {
     $id_original = $_POST['id_original'];
-    $novo_nome = $_POST['nome'];
-    $novo_id = $_POST['id'];
+    $novo_nome = trim($_POST['nome']);
+    $novo_id = trim($_POST['id']);
     $encontrou = false;
     $arqSaida = "";
 
-
     if (file_exists($arquivo_user)) {
+        $arq = fopen($arquivo_user, "r");
+        $cabecalho = fgets($arq);
+        $arqSaida = $cabecalho;
 
-        $arqDisc = fopen($arquivo_user, "r") or die("erro para abrir o arquivo");
-
-        while (!feof($arqDisc)) {
-            $linha = fgets($arqDisc);
-
+        while (!feof($arq)) {
+            $linha = fgets($arq);
             if (trim($linha) != "") {
                 $parte = explode(";", $linha);
 
                 if (trim($parte[1]) == $id_original) {
                     $encontrou = true;
                     $linha_nova = $novo_nome . ';' . $novo_id . "\n";
-
-                    $arqSaida = $arqSaida . $linha_nova;
+                    $arqSaida .= $linha_nova;
                 } else {
-                    $arqSaida = $arqSaida . $linha;
+                    $arqSaida .= $linha;
                 }
             }
         }
-        fclose($arqDisc);
+        fclose($arq);
 
-        $arqDisc = fopen($arquivo_user, "w") or die("erro na abertura para escrita");
-        fwrite($arqDisc, $arqSaida);
-        fclose($arqDisc);
+        $arq = fopen($arquivo_user, "w");
+        fwrite($arq, $arqSaida);
+        fclose($arq);
     }
 
     if ($encontrou) {
-        $msg = "Usuário com o id '$id_original' foi alterado com sucesso!";
+        $msg = "Usuário com ID '$id_original' foi alterado com sucesso!";
+        $modo_edicao = false;
     } else {
-        $msg = "Usuário com o id '$id_original' não foi encontrado.";
+        $msg = "Usuário com ID '$id_original' não foi encontrado.";
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -137,74 +154,110 @@ if (isset($_POST['acao']) && $_POST['acao'] == 'salvar' && isset($_POST['id_orig
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Criação de usuário</title>
+    <title>CRUD de Usuários</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .msg {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .sucesso {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .erro {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
 </head>
 
 <body>
-    <?php if ($id_para_editar != null): ?>
-        <h2>Editando Disciplina</h2>
-        <form action="" method="POST">
-            <input type="hidden" name="acao" value="salvar">
-            <input type="hidden" name="id_original" value="<?php echo $id_para_editar[1]; ?>">
+    <h1>Gerenciamento de Usuários</h1>
 
-            <label>Nome:</label><br>
-            <input type="text" name="nome" value="<?php echo $id_para_editar[0]; ?>" required><br><br>
-
-            <label>id:</label><br>
-            <input type="text" name="id" value="<?php echo $id_para_editar[1]; ?>" required><br><br>
-
-            <input type="submit" value="Salvar Alterações">
-            <a href="tela_usuarios_crud.php">Cancelar</a>
-
-        </form>
-    <?php else: ?>
-        <h2>Cadastro de usuario</h2>
-        <form action="" method="POST">
-            <input type="hidden" name="acao" value="criar">
-            <label>Nome:</label><br><input type="text" name="nome" required><br><br>
-            <label>id:</label><br><input type="text" name="id" required><br><br>
-            <input type="submit" value="criar">
-        </form>
-        <?php if (!empty($msg)) echo "<p style='color:green;'>$msg</p>"; ?>
+    <?php if (!empty($msg)): ?>
+        <div class="msg <?php echo strpos($msg, 'Erro') !== false ? 'erro' : 'sucesso'; ?>">
+            <?php echo $msg; ?>
+        </div>
     <?php endif; ?>
 
+    <!-- form de criar/editar -->
+    <h2><?php echo $modo_edicao ? 'Editar Usuário' : 'Cadastrar Novo Usuário'; ?></h2>
+    <form action="" method="POST">
+        <?php if ($modo_edicao): ?>
+            <input type="hidden" name="acao" value="salvar">
+            <input type="hidden" name="id_original" value="<?php echo $id_para_editar[1]; ?>">
+        <?php else: ?>
+            <input type="hidden" name="acao" value="criar">
+        <?php endif; ?>
 
-    <!-- Listagem de usuário -->
-    <h2>Lista de usuarios</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>ID</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (file_exists($arquivo_user)) {
-                $arqDisc = fopen($arquivo_user, "r") or die("erro para abrir o arquivo");
-                fgets($arqDisc);
+        <label>Nome:</label><br>
+        <input type="text" name="nome" value="<?php echo $modo_edicao ? $id_para_editar[0] : ''; ?>" required><br><br>
 
-                while (!feof($arqDisc)) {
-                    $linha = fgets($arqDisc);
+        <label>ID:</label><br>
+        <input type="text" name="id" value="<?php echo $modo_edicao ? $id_para_editar[1] : ''; ?>" required><br><br>
 
+        <input type="submit" value="<?php echo $modo_edicao ? 'Salvar Alterações' : 'Criar Usuário'; ?>">
+        <?php if ($modo_edicao): ?>
+            <a href="tela_usuarios_crud.php">Cancelar</a>
+        <?php endif; ?>
+    </form>
+
+    <!-- listar usuários  -->
+    <h2>Lista de Usuários Cadastrados</h2>
+    <?php if (file_exists($arquivo_user)): ?>
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>ID</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $arq = fopen($arquivo_user, "r");
+                fgets($arq);
+
+                while (!feof($arq)) {
+                    $linha = fgets($arq);
                     if (trim($linha) != "") {
                         $dados = explode(";", $linha);
-
                         echo "<tr>";
-                        echo "<td>" . $dados[0] . "</td>";
-                        echo "<td>" . $dados[1] . "</td>";
+                        echo "<td>" . htmlspecialchars($dados[0]) . "</td>";
+                        echo "<td>" . htmlspecialchars($dados[1]) . "</td>";
                         echo "<td>";
                         echo "<a href='?acao=editar&id=" . $dados[1] . "'>Editar</a> | ";
-                        echo "<a href='?acao=excluir&id=" . $dados[1] . "'\">Excluir</a>";
+                        echo "<a href='?acao=excluir&id=" . $dados[1] . "' onclick='return confirm(\"Tem certeza que deseja excluir?\")'>Excluir</a>";
                         echo "</td>";
                         echo "</tr>";
                     }
                 }
-                fclose($arqDisc);
-            }
-
-            ?>
-        </tbody>
-    </table>
+                fclose($arq);
+                ?>
+            </tbody>
+        </table>
+    <?php else: ?>
+        <p>Nenhum usuário cadastrado ainda.</p>
+    <?php endif; ?>
 </body>
 
 </html>
