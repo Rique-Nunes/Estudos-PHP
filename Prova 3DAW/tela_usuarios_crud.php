@@ -70,7 +70,7 @@ $id_para_editar = null;
 if (isset($_GET['acao']) && $_GET['acao'] == 'editar' && isset($_GET['id'])) {
     $id_get = $_GET['id'];
 
-    $arqDisc = fopen($arquivo_user, "r") or die ("erro na abertura do arquivo");
+    $arqDisc = fopen($arquivo_user, "r") or die("erro na abertura do arquivo");
 
     while (!feof($arqDisc)) {
         $linha = fgets($arqDisc);
@@ -78,10 +78,10 @@ if (isset($_GET['acao']) && $_GET['acao'] == 'editar' && isset($_GET['id'])) {
 
         if (isset($parte[1]) && trim($parte[1]) == $id_get) {
             $id_para_editar = $parte;
-            break; 
+            break;
         }
     }
-    
+
     fclose($arqDisc);
 }
 
@@ -110,7 +110,6 @@ if (isset($_POST['acao']) && $_POST['acao'] == 'salvar' && isset($_POST['id_orig
                     $linha_nova = $novo_nome . ';' . $novo_id . "\n";
 
                     $arqSaida = $arqSaida . $linha_nova;
-
                 } else {
                     $arqSaida = $arqSaida . $linha;
                 }
@@ -118,9 +117,9 @@ if (isset($_POST['acao']) && $_POST['acao'] == 'salvar' && isset($_POST['id_orig
         }
         fclose($arqDisc);
 
-    $arqDisc = fopen($arquivo_user, "w") or die("erro na abertura para escrita");
-    fwrite($arqDisc, $arqSaida);
-    fclose($arqDisc);
+        $arqDisc = fopen($arquivo_user, "w") or die("erro na abertura para escrita");
+        fwrite($arqDisc, $arqSaida);
+        fclose($arqDisc);
     }
 
     if ($encontrou) {
@@ -147,15 +146,15 @@ if (isset($_POST['acao']) && $_POST['acao'] == 'salvar' && isset($_POST['id_orig
         <form action="" method="POST">
             <input type="hidden" name="acao" value="salvar">
             <input type="hidden" name="id_original" value="<?php echo $id_para_editar[1]; ?>">
-            
+
             <label>Nome:</label><br>
             <input type="text" name="nome" value="<?php echo $id_para_editar[0]; ?>" required><br><br>
-            
+
             <label>id:</label><br>
             <input type="text" name="id" value="<?php echo $id_para_editar[1]; ?>" required><br><br>
 
             <input type="submit" value="Salvar Alterações">
-            <a href="tela_usuarios_admin.php">Cancelar</a>
+            <a href="tela_usuarios_crud.php">Cancelar</a>
 
         </form>
     <?php else: ?>
@@ -170,43 +169,42 @@ if (isset($_POST['acao']) && $_POST['acao'] == 'salvar' && isset($_POST['id_orig
     <?php endif; ?>
 
 
-        <!-- Listagem de usuário -->
-        <h2>Lista de usuarios</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Sigla</th>
-                    <th>Carga Horária</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (file_exists($arquivo_user)) {
-                    $arqDisc = fopen($arquivo_user, "r") or die("erro para abrir o arquivo");
-                    fgets($arqDisc);
+    <!-- Listagem de usuário -->
+    <h2>Lista de usuarios</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (file_exists($arquivo_user)) {
+                $arqDisc = fopen($arquivo_user, "r") or die("erro para abrir o arquivo");
+                fgets($arqDisc);
 
-                    while (!feof($arqDisc)) {
-                        $linha = fgets($arqDisc);
+                while (!feof($arqDisc)) {
+                    $linha = fgets($arqDisc);
 
-                        if (trim($linha) != "") {
-                            $dados = explode(";", $linha);
+                    if (trim($linha) != "") {
+                        $dados = explode(";", $linha);
 
-                            echo "<tr>";
-                            echo "<td>" . $dados[0] . "</td>";
-                            echo "<td>" . $dados[1] . "</td>";
-                            echo "<td>";
-                            echo "<a href='?acao=editar&id=" . $dados[1] . "'>Editar</a> | ";
-                            echo "<a href='?acao=excluir&id=" . $dados[1] . "'\">Excluir</a>";
-                            echo "</td>";
-                            echo "</tr>";
-                        }
+                        echo "<tr>";
+                        echo "<td>" . $dados[0] . "</td>";
+                        echo "<td>" . $dados[1] . "</td>";
+                        echo "<td>";
+                        echo "<a href='?acao=editar&id=" . $dados[1] . "'>Editar</a> | ";
+                        echo "<a href='?acao=excluir&id=" . $dados[1] . "'\">Excluir</a>";
+                        echo "</td>";
+                        echo "</tr>";
                     }
-                    fclose($arqDisc);
                 }
+                fclose($arqDisc);
+            }
 
-                ?>
-            </tbody>
-        </table>
+            ?>
+        </tbody>
+    </table>
 </body>
+
 </html>
