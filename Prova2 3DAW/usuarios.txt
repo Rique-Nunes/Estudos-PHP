@@ -1,0 +1,2 @@
+nome;id;email;senha
+Nicoli Regina Duzi Barone;henriquenunesrj09@gmail.com;henriquenunesrj09@gmail.com;123

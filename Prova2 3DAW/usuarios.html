@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CRUD de Usuários</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        input,
+        button {
+            margin: 5px;
+            padding: 5px;
+        }
+
+        #resultado {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            min-height: 150px;
+        }
+
+        a {
+            display: inline-block;
+            margin-bottom: 15px;
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .msg {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .sucesso {
+            background: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+
+        .erro {
+            background: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+    </style>
+
+    <script>
+        function enviarRequisicao(acao, parametros = "") {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    // Criar um elemento temporário para parsear o HTML
+                    let tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = this.responseText;
+
+                    // Extrair apenas a mensagem de sucesso/erro
+                    let msgElement = tempDiv.querySelector('.msg');
+                    if (msgElement) {
+                        document.getElementById("resultado").innerHTML = msgElement.outerHTML;
+                    } else {
+                        document.getElementById("resultado").innerHTML = this.responseText;
+                    }
+
+                    // Atualizar a lista após operações
+                    if (acao !== 'listar') {
+                        setTimeout(listarUsuarios, 500);
+                    }
+                }
+            };
+
+            if (acao === 'incluir') {
+                // Usar POST para incluir
+                let formData = new FormData();
+                formData.append('acao', 'criar');
+                formData.append('nome', document.getElementById("nome").value);
+                formData.append('id', document.getElementById("email").value); // Usar email como ID
+                formData.append('email', document.getElementById("email").value);
+                formData.append('senha', document.getElementById("senha").value);
+
+                xmlhttp.open("POST", "tela_usuarios_crud.php", true);
+                xmlhttp.send(formData);
+
+                // Limpar campos
+                document.getElementById("nome").value = '';
+                document.getElementById("email").value = '';
+                document.getElementById("senha").value = '';
+            } else {
+                // Usar GET para outras ações
+                xmlhttp.open("GET", `tela_usuarios_crud.php?acao=${acao}${parametros}`, true);
+                xmlhttp.send();
+            }
+        }
+
+        function listarUsuarios() {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    let tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = this.responseText;
+
+                    let table = tempDiv.querySelector('table');
+                    if (table) {
+                        document.getElementById("resultado").innerHTML = table.outerHTML;
+                    } else {
+                        document.getElementById("resultado").innerHTML = this.responseText;
+                    }
+                }
+            };
+            xmlhttp.open("GET", "tela_usuarios_crud.php", true);
+            xmlhttp.send();
+        }
+
+        function incluirUsuario() {
+            let nome = document.getElementById("nome").value;
+            let email = document.getElementById("email").value;
+            let senha = document.getElementById("senha").value;
+            if (!nome || !email || !senha) {
+                alert("Preencha todos os campos!");
+                return;
+            }
+            enviarRequisicao("incluir");
+        }
+
+        function excluirUsuario() {
+            let id = prompt("Digite o ID do usuário a excluir:");
+            if (id) {
+                if (confirm("Tem certeza que deseja excluir o usuário?")) {
+                    enviarRequisicao("excluir", `&id=${encodeURIComponent(id)}`);
+                }
+            }
+        }
+
+        // Carregar lista ao iniciar
+        window.onload = listarUsuarios;
+    </script>
+</head>
+
+<body>
+    <a href="tela_login.php">← Voltar ao Início</a>
+    <h1>Gerenciamento de Usuários</h1>
+
+    <h3>Incluir Usuário</h3>
+    Nome: <input type="text" id="nome">
+    Email: <input type="text" id="email">
+    Senha: <input type="password" id="senha">
+    <button onclick="incluirUsuario()">Incluir</button>
+
+    <hr>
+    <button onclick="listarUsuarios()">Listar Usuários</button>
+    <button onclick="excluirUsuario()">Excluir Usuário</button>
+
+    <div id="resultado">Os resultados aparecerão aqui...</div>
+</body>
+
+</html>

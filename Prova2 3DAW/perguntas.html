@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>CRUD de Perguntas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        input,
+        button,
+        textarea {
+            margin: 5px;
+            padding: 5px;
+        }
+
+        #resultado {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            min-height: 150px;
+        }
+
+        a {
+            display: inline-block;
+            margin-bottom: 15px;
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .msg {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .sucesso {
+            background: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+
+        .erro {
+            background: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+
+        .pergunta-form {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+    </style>
+
+    <script>
+        let tipoPerguntaAtual = '';
+
+        function mostrarFormularioTipo() {
+            document.getElementById('selecaoTipo').style.display = 'block';
+            document.getElementById('formMultipla').style.display = 'none';
+            document.getElementById('formDiscursiva').style.display = 'none';
+        }
+
+        function selecionarTipo() {
+            tipoPerguntaAtual = document.getElementById('tipoPergunta').value;
+
+            if (tipoPerguntaAtual === 'multipla') {
+                document.getElementById('formMultipla').style.display = 'block';
+                document.getElementById('formDiscursiva').style.display = 'none';
+            } else if (tipoPerguntaAtual === 'discursiva') {
+                document.getElementById('formMultipla').style.display = 'none';
+                document.getElementById('formDiscursiva').style.display = 'block';
+            }
+        }
+
+        function enviarRequisicao(acao, parametros = "") {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    let tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = this.responseText;
+
+                    let msgElement = tempDiv.querySelector('.msg');
+                    if (msgElement) {
+                        document.getElementById("resultado").innerHTML = msgElement.outerHTML;
+                    } else {
+                        document.getElementById("resultado").innerHTML = this.responseText;
+                    }
+
+                    if (acao !== 'listar') {
+                        setTimeout(listarPerguntas, 500);
+                        mostrarFormularioTipo(); // Resetar formulário
+                    }
+                }
+            };
+
+            if (acao === 'incluir') {
+                let formData = new FormData();
+
+                if (tipoPerguntaAtual === 'multipla') {
+                    formData.append('acao', 'criar_multipla');
+                    formData.append('id', document.getElementById("idMultipla").value);
+                    formData.append('pergunta', document.getElementById("perguntaMultipla").value);
+                    formData.append('resposta1', document.getElementById("resposta1").value);
+                    formData.append('resposta2', document.getElementById("resposta2").value);
+                    formData.append('resposta3', document.getElementById("resposta3").value);
+                    formData.append('resposta4', document.getElementById("resposta4").value);
+
+                    let correta = document.querySelector('input[name="resposta_correta"]:checked');
+                    if (correta) {
+                        formData.append('resposta_correta', correta.value);
+                    } else {
+                        alert("Selecione a resposta correta!");
+                        return;
+                    }
+                } else {
+                    formData.append('acao', 'criar_discursiva');
+                    formData.append('id', document.getElementById("idDiscursiva").value);
+                    formData.append('pergunta', document.getElementById("perguntaDiscursiva").value);
+                    formData.append('resposta', document.getElementById("respostaDiscursiva").value);
+                }
+
+                xmlhttp.open("POST", "tela_perguntas_admin.php", true);
+                xmlhttp.send(formData);
+
+                // Limpar campos
+                if (tipoPerguntaAtual === 'multipla') {
+                    document.getElementById("idMultipla").value = '';
+                    document.getElementById("perguntaMultipla").value = '';
+                    document.getElementById("resposta1").value = '';
+                    document.getElementById("resposta2").value = '';
+                    document.getElementById("resposta3").value = '';
+                    document.getElementById("resposta4").value = '';
+                } else {
+                    document.getElementById("idDiscursiva").value = '';
+                    document.getElementById("perguntaDiscursiva").value = '';
+                    document.getElementById("respostaDiscursiva").value = '';
+                }
+            } else {
+                xmlhttp.open("GET", `tela_perguntas_admin.php?acao=${acao}${parametros}`, true);
+                xmlhttp.send();
+            }
+        }
+
+        function listarPerguntas() {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    let tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = this.responseText;
+
+                    let table = tempDiv.querySelector('table');
+                    if (table) {
+                        document.getElementById("resultado").innerHTML = table.outerHTML;
+                    } else {
+                        document.getElementById("resultado").innerHTML = this.responseText;
+                    }
+                }
+            };
+            xmlhttp.open("GET", "tela_perguntas_admin.php", true);
+            xmlhttp.send();
+        }
+
+        function incluirPergunta() {
+            if (!tipoPerguntaAtual) {
+                alert("Selecione o tipo de pergunta primeiro!");
+                return;
+            }
+
+            if (tipoPerguntaAtual === 'multipla') {
+                let pergunta = document.getElementById("perguntaMultipla").value;
+                let id = document.getElementById("idMultipla").value;
+                if (!pergunta || !id) {
+                    alert("Preencha todos os campos!");
+                    return;
+                }
+            } else {
+                let pergunta = document.getElementById("perguntaDiscursiva").value;
+                let id = document.getElementById("idDiscursiva").value;
+                let resposta = document.getElementById("respostaDiscursiva").value;
+                if (!pergunta || !id || !resposta) {
+                    alert("Preencha todos os campos!");
+                    return;
+                }
+            }
+
+            enviarRequisicao("incluir");
+        }
+
+        function excluirPergunta() {
+            let id = prompt("Digite o ID da pergunta a excluir:");
+            if (id) {
+                if (confirm("Tem certeza que deseja excluir a pergunta?")) {
+                    enviarRequisicao("excluir", `&id=${encodeURIComponent(id)}`);
+                }
+            }
+        }
+
+        // Carregar lista ao iniciar
+        window.onload = function () {
+            mostrarFormularioTipo();
+            listarPerguntas();
+        };
+    </script>
+</head>
+
+<body>
+    <a href="tela_login.php">← Voltar ao Início</a>
+    <h1>Gerenciamento de Perguntas</h1>
+
+    <!-- Seleção de Tipo -->
+    <div id="selecaoTipo" class="pergunta-form">
+        <h3>Selecionar Tipo de Pergunta</h3>
+        <select id="tipoPergunta" onchange="selecionarTipo()">
+            <option value="">Selecione o tipo...</option>
+            <option value="multipla">Múltipla Escolha</option>
+            <option value="discursiva">Discursiva</option>
+        </select>
+    </div>
+
+    <!-- Formulário Múltipla Escolha -->
+    <div id="formMultipla" class="pergunta-form" style="display: none;">
+        <h3>Incluir Pergunta de Múltipla Escolha</h3>
+        ID: <input type="text" id="idMultipla"><br>
+        Pergunta: <textarea id="perguntaMultipla" rows="3" cols="50"></textarea><br>
+        Resposta 1: <input type="text" id="resposta1"><br>
+        Resposta 2: <input type="text" id="resposta2"><br>
+        Resposta 3: <input type="text" id="resposta3"><br>
+        Resposta 4: <input type="text" id="resposta4"><br>
+        Resposta Correta:<br>
+        <input type="radio" name="resposta_correta" value="1"> 1
+        <input type="radio" name="resposta_correta" value="2"> 2
+        <input type="radio" name="resposta_correta" value="3"> 3
+        <input type="radio" name="resposta_correta" value="4"> 4<br>
+        <button onclick="incluirPergunta()">Incluir Pergunta</button>
+    </div>
+
+    <!-- Formulário Discursiva -->
+    <div id="formDiscursiva" class="pergunta-form" style="display: none;">
+        <h3>Incluir Pergunta Discursiva</h3>
+        ID: <input type="text" id="idDiscursiva"><br>
+        Pergunta: <textarea id="perguntaDiscursiva" rows="3" cols="50"></textarea><br>
+        Resposta Esperada: <textarea id="respostaDiscursiva" rows="3" cols="50"></textarea><br>
+        <button onclick="incluirPergunta()">Incluir Pergunta</button>
+    </div>
+
+    <hr>
+    <button onclick="listarPerguntas()">Listar Perguntas</button>
+    <button onclick="excluirPergunta()">Excluir Pergunta</button>
+
+    <div id="resultado">Os resultados aparecerão aqui...</div>
+</body>
+
+</html>

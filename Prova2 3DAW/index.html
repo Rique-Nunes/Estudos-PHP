@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Administração</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            text-align: center;
+            padding-top: 100px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        a {
+            display: inline-block;
+            margin: 15px;
+            padding: 15px 30px;
+            text-decoration: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        a:hover {
+            background-color: #0056b3;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .modes {
+            margin: 40px 0;
+        }
+
+        .admin-links {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Bem-vindo ao Sistema de Administração</h1>
+
+        <div class="modes">
+            <p>Escolha um modo de acesso:</p>
+            <a href="tela_admin.php">Modo Administrador</a>
+            <a href="tela_login_usuario.php">Modo Usuário</a>
+        </div>
+
+        <div class="admin-links">
+            <p>Ou acesse diretamente:</p>
+            <a href="usuarios.html">Gerenciar Usuários (AJAX)</a>
+            <a href="perguntas.html">Gerenciar Perguntas (AJAX)</a>
+            <a href="tela_usuarios_crud.php">Gerenciar Usuários (PHP)</a>
+            <a href="tela_perguntas_admin.php">Gerenciar Perguntas (PHP)</a>
+        </div>
+    </div>
+</body>
+
+</html>
