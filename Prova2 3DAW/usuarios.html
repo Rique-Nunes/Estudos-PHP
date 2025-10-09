@@ -34,43 +34,66 @@
             color: #007bff;
         }
 
-        .msg {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-
         .sucesso {
             background: #dff0d8;
             color: #3c763d;
             border: 1px solid #d6e9c6;
+            padding: 10px;
+            margin: 10px 0;
         }
 
         .erro {
             background: #f2dede;
             color: #a94442;
             border: 1px solid #ebccd1;
+            padding: 10px;
+            margin: 10px 0;
         }
     </style>
 
     <script>
+        function carregarFormularioEdicaoUsuario(id) {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("resultado").innerHTML = this.responseText;
+                }
+            };
+            xmlhttp.open("GET", `tela_usuarios_crud.php?acao=editar&id=${encodeURIComponent(id)}`, true);
+            xmlhttp.send();
+        }
+
+        function excluirUsuarioPorId(id) {
+            if (confirm("Tem certeza que deseja excluir este usuário?")) {
+                let xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        let tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = this.responseText;
+                        let msgElement = tempDiv.querySelector('.msg');
+                        if (msgElement) {
+                            document.getElementById("resultado").innerHTML = msgElement.outerHTML;
+                        }
+                        setTimeout(listarUsuarios, 500);
+                    }
+                };
+                xmlhttp.open("GET", `tela_usuarios_crud.php?acao=excluir&id=${encodeURIComponent(id)}`, true);
+                xmlhttp.send();
+            }
+        }
+
         function enviarRequisicao(acao, parametros = "") {
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-                    // Criar um elemento temporário para parsear o HTML
                     let tempDiv = document.createElement('div');
                     tempDiv.innerHTML = this.responseText;
-
-                    // Extrair apenas a mensagem de sucesso/erro
                     let msgElement = tempDiv.querySelector('.msg');
                     if (msgElement) {
                         document.getElementById("resultado").innerHTML = msgElement.outerHTML;
                     } else {
                         document.getElementById("resultado").innerHTML = this.responseText;
                     }
-
-                    // Atualizar a lista após operações
                     if (acao !== 'listar') {
                         setTimeout(listarUsuarios, 500);
                     }
@@ -78,23 +101,20 @@
             };
 
             if (acao === 'incluir') {
-                // Usar POST para incluir
                 let formData = new FormData();
                 formData.append('acao', 'criar');
                 formData.append('nome', document.getElementById("nome").value);
-                formData.append('id', document.getElementById("email").value); // Usar email como ID
+                formData.append('id', document.getElementById("email").value);
                 formData.append('email', document.getElementById("email").value);
                 formData.append('senha', document.getElementById("senha").value);
 
                 xmlhttp.open("POST", "tela_usuarios_crud.php", true);
                 xmlhttp.send(formData);
 
-                // Limpar campos
                 document.getElementById("nome").value = '';
                 document.getElementById("email").value = '';
                 document.getElementById("senha").value = '';
             } else {
-                // Usar GET para outras ações
                 xmlhttp.open("GET", `tela_usuarios_crud.php?acao=${acao}${parametros}`, true);
                 xmlhttp.send();
             }
@@ -106,6 +126,22 @@
                 if (this.readyState == 4 && this.status == 200) {
                     let tempDiv = document.createElement('div');
                     tempDiv.innerHTML = this.responseText;
+
+                    let linksEditar = tempDiv.querySelectorAll('a[href*="acao=editar"]');
+                    linksEditar.forEach(link => {
+                        let href = link.getAttribute('href');
+                        let id = new URLSearchParams(href.split('?')[1]).get('id');
+                        link.setAttribute('onclick', `carregarFormularioEdicaoUsuario('${id}')`);
+                        link.setAttribute('href', 'javascript:void(0)');
+                    });
+
+                    let linksExcluir = tempDiv.querySelectorAll('a[href*="acao=excluir"]');
+                    linksExcluir.forEach(link => {
+                        let href = link.getAttribute('href');
+                        let id = new URLSearchParams(href.split('?')[1]).get('id');
+                        link.setAttribute('onclick', `excluirUsuarioPorId('${id}')`);
+                        link.setAttribute('href', 'javascript:void(0)');
+                    });
 
                     let table = tempDiv.querySelector('table');
                     if (table) {
@@ -133,19 +169,16 @@
         function excluirUsuario() {
             let id = prompt("Digite o ID do usuário a excluir:");
             if (id) {
-                if (confirm("Tem certeza que deseja excluir o usuário?")) {
-                    enviarRequisicao("excluir", `&id=${encodeURIComponent(id)}`);
-                }
+                excluirUsuarioPorId(id);
             }
         }
 
-        // Carregar lista ao iniciar
         window.onload = listarUsuarios;
     </script>
 </head>
 
 <body>
-    <a href="tela_login.php">← Voltar ao Início</a>
+    <a href="tela_admin.html">← Voltar ao Início</a>
     <h1>Gerenciamento de Usuários</h1>
 
     <h3>Incluir Usuário</h3>

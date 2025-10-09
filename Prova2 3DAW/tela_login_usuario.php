@@ -2,26 +2,22 @@
 $arquivo_user = "usuarios.txt";
 $msg = "";
 
-// Registrar e logar usuário
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['acao'] == 'entrar') {
     $nome = trim($_POST['nome']);
     $email = trim($_POST['email']);
     $senha = trim($_POST['senha']);
     
-    // Verificar se usuário já existe
     $usuario_existe = false;
     
     if (file_exists($arquivo_user)) {
         $arq = fopen($arquivo_user, "r");
-        fgets($arq); // Pular cabeçalho
+        fgets($arq); 
         while (!feof($arq)) {
             $linha = fgets($arq);
             if (trim($linha) != "") {
                 $dados = explode(";", $linha);
-                // Verificar por email
                 if (isset($dados[2]) && trim($dados[2]) == $email) {
                     $usuario_existe = true;
-                    // Verificar senha
                     if (trim($dados[3]) == $senha) {
                         break;
                     } else {
@@ -34,7 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
         fclose($arq);
     }
     
-    // Se não existe, criar novo usuário
     if (!$usuario_existe) {
         if (!file_exists($arquivo_user)) {
             $cabecalho = "nome;id;email;senha\n";
@@ -43,14 +38,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
             fclose($arq);
         }
         
-        // Usar o email como ID (simplificado)
         $arq = fopen($arquivo_user, "a");
         $linha = $nome . ';' . $email . ';' . $email . ';' . $senha . "\n";
         fwrite($arq, $linha);
         fclose($arq);
     }
     
-    // Redirecionar para área do usuário com email na URL
     if (empty($msg)) {
         header("Location: tela_usuario.php?usuario_email=" . urlencode($email));
         exit();

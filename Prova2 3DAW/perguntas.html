@@ -35,22 +35,20 @@
             color: #007bff;
         }
 
-        .msg {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-
         .sucesso {
             background: #dff0d8;
             color: #3c763d;
             border: 1px solid #d6e9c6;
+            padding: 10px;
+            margin: 10px 0;
         }
 
         .erro {
             background: #f2dede;
             color: #a94442;
             border: 1px solid #ebccd1;
+            padding: 10px;
+            margin: 10px 0;
         }
 
         .pergunta-form {
@@ -82,23 +80,51 @@
             }
         }
 
+        function carregarFormularioEdicao(id) {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("resultado").innerHTML = this.responseText;
+                }
+            };
+            xmlhttp.open("GET", `tela_perguntas_crud.php?acao=editar&id=${encodeURIComponent(id)}`, true);
+            xmlhttp.send();
+        }
+
+        function excluirPerguntaPorId(id) {
+            if (confirm("Tem certeza que deseja excluir esta pergunta?")) {
+                let xmlhttp = new XMLHttpRequest();
+                xmlhttp.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        let tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = this.responseText;
+                        let msgElement = tempDiv.querySelector('.msg');
+                        if (msgElement) {
+                            document.getElementById("resultado").innerHTML = msgElement.outerHTML;
+                        }
+                        setTimeout(listarPerguntas, 500);
+                    }
+                };
+                xmlhttp.open("GET", `tela_perguntas_crud.php?acao=excluir&id=${encodeURIComponent(id)}`, true);
+                xmlhttp.send();
+            }
+        }
+
         function enviarRequisicao(acao, parametros = "") {
             let xmlhttp = new XMLHttpRequest();
             xmlhttp.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
                     let tempDiv = document.createElement('div');
                     tempDiv.innerHTML = this.responseText;
-
                     let msgElement = tempDiv.querySelector('.msg');
                     if (msgElement) {
                         document.getElementById("resultado").innerHTML = msgElement.outerHTML;
                     } else {
                         document.getElementById("resultado").innerHTML = this.responseText;
                     }
-
                     if (acao !== 'listar') {
                         setTimeout(listarPerguntas, 500);
-                        mostrarFormularioTipo(); // Resetar formulário
+                        mostrarFormularioTipo();
                     }
                 }
             };
@@ -129,10 +155,9 @@
                     formData.append('resposta', document.getElementById("respostaDiscursiva").value);
                 }
 
-                xmlhttp.open("POST", "tela_perguntas_admin.php", true);
+                xmlhttp.open("POST", "tela_perguntas_crud.php", true);
                 xmlhttp.send(formData);
 
-                // Limpar campos
                 if (tipoPerguntaAtual === 'multipla') {
                     document.getElementById("idMultipla").value = '';
                     document.getElementById("perguntaMultipla").value = '';
@@ -146,7 +171,7 @@
                     document.getElementById("respostaDiscursiva").value = '';
                 }
             } else {
-                xmlhttp.open("GET", `tela_perguntas_admin.php?acao=${acao}${parametros}`, true);
+                xmlhttp.open("GET", `tela_perguntas_crud.php?acao=${acao}${parametros}`, true);
                 xmlhttp.send();
             }
         }
@@ -158,6 +183,22 @@
                     let tempDiv = document.createElement('div');
                     tempDiv.innerHTML = this.responseText;
 
+                    let linksEditar = tempDiv.querySelectorAll('a[href*="acao=editar"]');
+                    linksEditar.forEach(link => {
+                        let href = link.getAttribute('href');
+                        let id = new URLSearchParams(href.split('?')[1]).get('id');
+                        link.setAttribute('onclick', `carregarFormularioEdicao('${id}')`);
+                        link.setAttribute('href', 'javascript:void(0)');
+                    });
+
+                    let linksExcluir = tempDiv.querySelectorAll('a[href*="acao=excluir"]');
+                    linksExcluir.forEach(link => {
+                        let href = link.getAttribute('href');
+                        let id = new URLSearchParams(href.split('?')[1]).get('id');
+                        link.setAttribute('onclick', `excluirPerguntaPorId('${id}')`);
+                        link.setAttribute('href', 'javascript:void(0)');
+                    });
+
                     let table = tempDiv.querySelector('table');
                     if (table) {
                         document.getElementById("resultado").innerHTML = table.outerHTML;
@@ -166,7 +207,7 @@
                     }
                 }
             };
-            xmlhttp.open("GET", "tela_perguntas_admin.php", true);
+            xmlhttp.open("GET", "tela_perguntas_crud.php", true);
             xmlhttp.send();
         }
 
@@ -199,13 +240,10 @@
         function excluirPergunta() {
             let id = prompt("Digite o ID da pergunta a excluir:");
             if (id) {
-                if (confirm("Tem certeza que deseja excluir a pergunta?")) {
-                    enviarRequisicao("excluir", `&id=${encodeURIComponent(id)}`);
-                }
+                excluirPerguntaPorId(id);
             }
         }
 
-        // Carregar lista ao iniciar
         window.onload = function () {
             mostrarFormularioTipo();
             listarPerguntas();
@@ -214,10 +252,9 @@
 </head>
 
 <body>
-    <a href="tela_login.php">← Voltar ao Início</a>
+    <a href="tela_admin.html">← Voltar ao Início</a>
     <h1>Gerenciamento de Perguntas</h1>
 
-    <!-- Seleção de Tipo -->
     <div id="selecaoTipo" class="pergunta-form">
         <h3>Selecionar Tipo de Pergunta</h3>
         <select id="tipoPergunta" onchange="selecionarTipo()">
@@ -227,7 +264,6 @@
         </select>
     </div>
 
-    <!-- Formulário Múltipla Escolha -->
     <div id="formMultipla" class="pergunta-form" style="display: none;">
         <h3>Incluir Pergunta de Múltipla Escolha</h3>
         ID: <input type="text" id="idMultipla"><br>
@@ -244,7 +280,6 @@
         <button onclick="incluirPergunta()">Incluir Pergunta</button>
     </div>
 
-    <!-- Formulário Discursiva -->
     <div id="formDiscursiva" class="pergunta-form" style="display: none;">
         <h3>Incluir Pergunta Discursiva</h3>
         ID: <input type="text" id="idDiscursiva"><br>

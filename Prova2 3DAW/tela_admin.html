@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Administrador</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        .pergunta {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .resposta {
+            background: #f0f8ff;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 3px solid #4ecdc4;
+        }
+
+        .usuario-info {
+            font-weight: bold;
+            color: #0066cc;
+        }
+
+        .links a {
+            margin-right: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Painel do Administrador</h1>
+
+    <div class="links">
+        <a href="tela_login.php">Voltar</a>
+        <a href="perguntas.html">Gerenciar Perguntas</a>
+        <a href="usuarios.html">Gerenciar Usuários</a>
+    </div>
+
+    <h2>Perguntas e Respostas</h2>
+
+    <div id="conteudo"></div>
+
+    <script>
+        function carregarDadosAdmin() {
+            let xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("conteudo").innerHTML = this.responseText;
+                }
+            };
+            xhr.open("GET", "tela_admin.php", true);
+            xhr.send();
+        }
+
+        window.onload = carregarDadosAdmin;
+    </script>
+</body>
+
+</html>

@@ -4,13 +4,12 @@ $arquivo_respostas = "respostas.txt";
 $arquivo_usuarios = "usuarios.txt";
 $msg = "";
 
-// Buscar dados do usuário pelo email da URL
 $usuario_email = isset($_GET['usuario_email']) ? $_GET['usuario_email'] : '';
 $usuario_nome = '';
 
 if (!empty($usuario_email) && file_exists($arquivo_usuarios)) {
     $arq = fopen($arquivo_usuarios, "r");
-    fgets($arq); // Pular cabeçalho
+    fgets($arq);
     while (!feof($arq)) {
         $linha = fgets($arq);
         if (trim($linha) != "") {
@@ -24,16 +23,13 @@ if (!empty($usuario_email) && file_exists($arquivo_usuarios)) {
     fclose($arq);
 }
 
-// Se não encontrou usuário, voltar para login
 if (empty($usuario_nome)) {
     header("Location: tela_login_usuario.php");
     exit();
 }
 
-// Processar respostas do usuário
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['acao'] == 'responder') {
     
-    // Salvar todas as respostas
     if (!file_exists($arquivo_respostas)) {
         $cabecalho = "usuario_nome;usuario_email;id_pergunta;resposta\n";
         $arq = fopen($arquivo_respostas, "w");

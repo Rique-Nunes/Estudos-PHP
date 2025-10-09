@@ -2,7 +2,6 @@
 $msg = "";
 $arquivo_user = "usuarios.txt";
 
-// Criação de usuários
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['acao'] == "criar") {
     $nome = trim($_POST["nome"]);
     $id = trim($_POST["id"]);
@@ -53,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
     }
 }
 
-//Exclusão de usuários
 if (isset($_GET['acao']) && $_GET['acao'] == 'excluir' && isset($_GET['id'])) {
     $id_para_deletar = $_GET['id'];
     $encontrou = false;
@@ -89,11 +87,9 @@ if (isset($_GET['acao']) && $_GET['acao'] == 'excluir' && isset($_GET['id'])) {
     }
 }
 
-//Edição de usuários
 $id_para_editar = null;
 $modo_edicao = false;
 
-// Abrir opção de alteração
 if (isset($_GET['acao']) && $_GET['acao'] == 'editar' && isset($_GET['id'])) {
     $id_get = $_GET['id'];
     $modo_edicao = true;
@@ -116,7 +112,6 @@ if (isset($_GET['acao']) && $_GET['acao'] == 'editar' && isset($_GET['id'])) {
     }
 }
 
-// Salvar alteração
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['acao'] == 'salvar' && isset($_POST['id_original'])) {
     $id_original = $_POST['id_original'];
     $novo_nome = trim($_POST['nome']);
@@ -126,7 +121,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
     $encontrou = false;
     $arqSaida = "";
 
-    // Verificar se novo email já existe em outro usuário
     $email_existe = false;
     if (file_exists($arquivo_user)) {
         $arq = fopen($arquivo_user, "r");
@@ -290,7 +284,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
         </div>
     <?php endif; ?>
 
-    <!-- form de criar/editar -->
     <h2><?php echo $modo_edicao ? 'Editar Usuário' : 'Cadastrar Novo Usuário'; ?></h2>
     <form action="" method="POST">
         <?php if ($modo_edicao): ?>
@@ -318,7 +311,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
         <?php endif; ?>
     </form>
 
-    <!-- listar usuários  -->
     <h2>Lista de Usuários Cadastrados</h2>
     <?php if (file_exists($arquivo_user)): ?>
         <table>

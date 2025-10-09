@@ -4,7 +4,6 @@ $msg = "";
 $modo_edicao = false;
 $pergunta_edicao = null;
 
-// Criação pergunta multipla escolha
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['acao'] == "criar_multipla") {
     $id = trim($_POST['id']);
     $pergunta = trim($_POST['pergunta']);
@@ -56,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
     }
 }
 
-// Criação de pergunta discursivas
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['acao'] == "criar_discursiva") {
     $id = trim($_POST['id']);
     $pergunta = trim($_POST['pergunta']);
@@ -99,7 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
     }
 }
 
-// Exclusão de perguntas
 if (isset($_GET['acao']) && $_GET['acao'] == 'excluir' && isset($_GET['id'])) {
     $id_para_deletar = $_GET['id'];
     $encontrou = false;
@@ -135,7 +132,6 @@ if (isset($_GET['acao']) && $_GET['acao'] == 'excluir' && isset($_GET['id'])) {
     }
 }
 
-// Edição de perguntas
 if (isset($_GET['acao']) && $_GET['acao'] == 'editar' && isset($_GET['id'])) {
     $id_get = $_GET['id'];
     $modo_edicao = true;
@@ -157,7 +153,6 @@ if (isset($_GET['acao']) && $_GET['acao'] == 'editar' && isset($_GET['id'])) {
     }
 }
 
-// Salvar a edição
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['acao'] == 'salvar_edicao') {
     $id_original = $_POST['id_original'];
     $tipo = $_POST['tipo'];
@@ -218,7 +213,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
     }
 }
 
-// Ver pergunta individualmente
 $pergunta_individual = null;
 if (isset($_GET['acao']) && $_GET['acao'] == 'ver' && isset($_GET['id'])) {
     $id_get = $_GET['id'];
@@ -240,7 +234,6 @@ if (isset($_GET['acao']) && $_GET['acao'] == 'ver' && isset($_GET['id'])) {
     }
 }
 
-// Variavel para verificar qual tipo de pergunta vai criar
 $tipo_pergunta = isset($_POST['tipo_pergunta']) ? $_POST['tipo_pergunta'] : '';
 ?>
 
@@ -351,7 +344,6 @@ $tipo_pergunta = isset($_POST['tipo_pergunta']) ? $_POST['tipo_pergunta'] : '';
         </div>
     <?php endif; ?>
 
-    <!-- Ver pergunta individual -->
     <?php if ($pergunta_individual): ?>
         <div>
             <h2>Visualizar Pergunta</h2>
@@ -372,10 +364,9 @@ $tipo_pergunta = isset($_POST['tipo_pergunta']) ? $_POST['tipo_pergunta'] : '';
                 <p><strong>Resposta Esperada:</strong> <?php echo htmlspecialchars($pergunta_individual[7]); ?></p>
             <?php endif; ?>
 
-            <a href="tela_perguntas_admin.php">Voltar</a>
+            <a href="tela_perguntas_crud.php">Voltar</a>
         </div>
 
-    <!-- edição de pergunta -->
     <?php elseif ($modo_edicao && $pergunta_edicao): ?>
         <div>
             <h2>Editar Pergunta</h2>
@@ -414,11 +405,10 @@ $tipo_pergunta = isset($_POST['tipo_pergunta']) ? $_POST['tipo_pergunta'] : '';
                 <?php endif; ?>
 
                 <input type="submit" value="Salvar Alterações">
-                <a href="tela_perguntas_admin.php">Cancelar</a>
+                <a href="tela_perguntas_crud.php">Cancelar</a>
             </form>
         </div>
 
-    <!-- seleção do tipo de pergunta -->
     <?php elseif (!$tipo_pergunta && !$modo_edicao): ?>
         <div>
             <h2>Selecionar Tipo de Pergunta</h2>
@@ -433,7 +423,6 @@ $tipo_pergunta = isset($_POST['tipo_pergunta']) ? $_POST['tipo_pergunta'] : '';
             </form>
         </div>
 
-    <!-- Criação de pergunta multipla escolhga -->
     <?php elseif ($tipo_pergunta == 'multipla' && !$modo_edicao): ?>
         <div>
             <h2>Criar Pergunta de Múltipla Escolha</h2>
@@ -465,7 +454,7 @@ $tipo_pergunta = isset($_POST['tipo_pergunta']) ? $_POST['tipo_pergunta'] : '';
                 <input type="radio" name="resposta_correta" value="4" required> Resposta 4
 
                 <input type="submit" value="Criar Pergunta">
-                <a href="tela_perguntas_admin.php">Cancelar</a>
+                <a href="tela_perguntas_crud.php">Cancelar</a>
             </form>
         </div>
 
@@ -486,12 +475,11 @@ $tipo_pergunta = isset($_POST['tipo_pergunta']) ? $_POST['tipo_pergunta'] : '';
                 <textarea name="resposta" required></textarea>
 
                 <input type="submit" value="Criar Pergunta">
-                <a href="tela_perguntas_admin.php">Cancelar</a>
+                <a href="tela_perguntas_crud.php">Cancelar</a>
             </form>
         </div>
     <?php endif; ?>
 
-    <!-- Listagem de perguntas -->
     <h2>Lista de Perguntas Cadastradas</h2>
     <?php if (file_exists($arquivo_perguntas)): ?>
         <table>
