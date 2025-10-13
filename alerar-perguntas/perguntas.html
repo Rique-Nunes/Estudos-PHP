@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerenciamento de Perguntas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+        h1 {
+            color: #333;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #resultado {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            min-height: 150px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 5px;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .msg {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .sucesso {
+            background: #dff0d8;
+            color: #3c763d;
+            border: 1px solid #d6e9c6;
+        }
+        .erro {
+            background: #f2dede;
+            color: #a94442;
+            border: 1px solid #ebccd1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gerenciamento de Perguntas</h1>
+    <hr>
+    <button onclick="listarPerguntas()">Listar Perguntas</button>
+
+    <div id="resultado">Os resultados aparecerão aqui...</div>
+
+    <script>
+        function carregarFormularioEdicao(id) {
+            console.log("Carregando edição para ID: " + id);
+            window.location.href = `tela_perguntas_crud.php?acao=editar&id=${encodeURIComponent(id)}`;
+        }
+
+        function listarPerguntas() {
+            console.log("Listando perguntas...");
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    console.log("Status: " + this.status);
+                    if (this.status == 200) {
+                        let tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = this.responseText;
+
+                        // Encontrar a tabela de perguntas
+                        let table = tempDiv.querySelector('table');
+                        if (table) {
+                            document.getElementById("resultado").innerHTML = table.outerHTML;
+                            
+                            // Adicionar eventos aos links de edição
+                            let linksEditar = document.querySelectorAll('a[href*="acao=editar"]');
+                            linksEditar.forEach(link => {
+                                let href = link.getAttribute('href');
+                                let urlParams = new URLSearchParams(href.split('?')[1]);
+                                let id = urlParams.get('id');
+                                link.onclick = function(e) {
+                                    e.preventDefault();
+                                    carregarFormularioEdicao(id);
+                                };
+                            });
+                        } else {
+                            document.getElementById("resultado").innerHTML = this.responseText;
+                        }
+                    } else {
+                        document.getElementById("resultado").innerHTML = "Erro ao carregar perguntas.";
+                    }
+                }
+            };
+            xmlhttp.open("GET", "tela_perguntas_crud.php", true);
+            xmlhttp.send();
+        }
+
+        window.onload = function () {
+            console.log("Página carregada");
+            listarPerguntas();
+        };
+    </script>
+</body>
+</html>

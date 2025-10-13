@@ -1,0 +1,3 @@
+tipo;id;pergunta;resposta1;resposta2;resposta3;resposta4;resposta_correta
+multipla;1;Qual o nome do batman?;batman;Robert Partson;Andre neves;Bruce Willians;3
+texto;2;Qual o nome do superman.?;;;;;O nome dele é Henrique Nunes
