@@ -71,12 +71,24 @@
     <h1>Gerenciamento de Perguntas</h1>
     <hr>
 
+    <h3>Editar Pergunta por ID</h3>
+    <input type="text" id="id_editar">
+    <button onclick="editarPorId()">Abrir Edição</button>
+    
     <hr>
     <button onclick="listarPerguntas()">Listar Perguntas</button>
 
     <div id="resultado">Os resultados aparecerão aqui...</div>
 
     <script>
+        function editarPorId() {
+        let id = document.getElementById('id_editar').value;
+        if (id) {
+            carregarFormularioEdicao(id);
+        } else {
+            alert('Digite um ID válido');
+        }
+        }
         function carregarVisualizacao(id) {
             window.location.href = `tela_perguntas_crud.php?acao=ver&id=${encodeURIComponent(id)}`;
         }
