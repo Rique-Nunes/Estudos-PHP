@@ -4,8 +4,6 @@ $msg = "";
 $modo_edicao = false;
 $pergunta_edicao = null;
 
-// Debug: Verificar se o script está sendo executado
-error_log("Script tela_perguntas_crud.php iniciado");
 
 if (isset($_GET['acao']) && $_GET['acao'] == 'editar' && isset($_GET['id'])) {
     $id_get = $_GET['id'];
@@ -13,7 +11,7 @@ if (isset($_GET['acao']) && $_GET['acao'] == 'editar' && isset($_GET['id'])) {
 
     if (file_exists($arquivo_perguntas)) {
         $arq = fopen($arquivo_perguntas, "r");
-        fgets($arq); // Pula cabeçalho
+        fgets($arq); 
 
         while (!feof($arq)) {
             $linha = fgets($arq);
@@ -28,14 +26,8 @@ if (isset($_GET['acao']) && $_GET['acao'] == 'editar' && isset($_GET['id'])) {
     }
 }
 
-// Debug: Verificar se está recebendo POST
-error_log("Método de requisição: " . $_SERVER['REQUEST_METHOD']);
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    error_log("POST recebido: " . print_r($_POST, true));
-}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['acao'] == 'salvar_edicao') {
-    error_log("Iniciando processo de salvamento da edição");
     
     $id_original = trim($_POST['id_original']);
     $tipo = $_POST['tipo'];
@@ -48,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
     if (file_exists($arquivo_perguntas)) {
         $arq = fopen($arquivo_perguntas, "r");
         
-        // Manter o cabeçalho
         $cabecalho = fgets($arq);
         $conteudo_atualizado = $cabecalho;
 
@@ -61,7 +52,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
                     $encontrou = true;
                     error_log("Encontrou pergunta para editar: " . $id_original);
 
-                    // Construir nova linha
                     if ($tipo == 'multipla') {
                         $respostas = [
                             trim($_POST['resposta1']),
@@ -80,7 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
                     }
                     
                     $conteudo_atualizado .= $linha_nova;
-                    error_log("Nova linha: " . $linha_nova);
                 } else {
                     $conteudo_atualizado .= $linha;
                 }
@@ -88,7 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
         }
         fclose($arq);
 
-        // Escrever de volta no arquivo
         if ($encontrou) {
             $arq = fopen($arquivo_perguntas, "w");
             fwrite($arq, $conteudo_atualizado);
@@ -96,22 +84,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
             
             $msg = "Pergunta com ID '$id_original' foi alterada com sucesso!";
             $modo_edicao = false;
-            error_log("Pergunta salva com sucesso");
         } else {
             $msg = "Erro: Pergunta com ID '$id_original' não foi encontrada.";
-            error_log("Pergunta não encontrada para ID: " . $id_original);
         }
     } else {
         $msg = "Erro: Arquivo de perguntas não encontrado.";
-        error_log("Arquivo de perguntas não existe: " . $arquivo_perguntas);
     }
-    
-    // Redirecionar para evitar reenvio do formulário
-    header("Location: tela_perguntas_crud.php?msg=" . urlencode($msg));
-    exit();
 }
 
-// Processar mensagem do GET (após redirecionamento)
 if (isset($_GET['msg'])) {
     $msg = $_GET['msg'];
 }
@@ -280,8 +260,6 @@ if (isset($_GET['acao']) && $_GET['acao'] == 'ver' && isset($_GET['id'])) {
             <?php else: ?>
                 <p><strong>Resposta Esperada:</strong> <?php echo htmlspecialchars($pergunta_individual[7]); ?></p>
             <?php endif; ?>
-
-            <a href="tela_perguntas_crud.php">Voltar</a>
         </div>
 
     <?php elseif ($modo_edicao && $pergunta_edicao): ?>
@@ -351,7 +329,7 @@ if (isset($_GET['acao']) && $_GET['acao'] == 'ver' && isset($_GET['id'])) {
                     <?php
                     if (file_exists($arquivo_perguntas)) {
                         $arq = fopen($arquivo_perguntas, "r");
-                        $cabecalho = fgets($arq); // Pula o cabeçalho
+                        $cabecalho = fgets($arq);
 
                         while (!feof($arq)) {
                             $linha = fgets($arq);
