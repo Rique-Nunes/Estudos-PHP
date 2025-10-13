@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['acao']) && $_POST['aca
     </form>
 
     <div class="links">
-        <a href="tela_login.php">Voltar</a> | 
+        <a href="index.html">Voltar</a> | 
     </div>
 </body>
 </html>
