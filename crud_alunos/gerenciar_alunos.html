@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD de Alunos (AJAX)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        form {
+            background: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            margin: 20px 0;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="email"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            margin: 5px 0;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        input[type="button"] {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            width: auto;
+        }
+
+        a {
+            color: #0066cc;
+            text-decoration: none;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-editar {
+            background: #ffc107;
+        }
+
+        .btn-cancelar {
+            background: #777;
+        }
+
+        .msg {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .sucesso {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .erro {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+
+<body onload="listarAlunos()">
+    <h1>Gerenciamento de Alunos (Banco de Dados + AJAX)</h1>
+
+    <div id="msg"></div>
+
+    <div id="form-criar">
+        <h2>Cadastrar Novo Aluno</h2>
+        <form name="formCriarAluno" id="formCriarAluno">
+            <input type="hidden" name="acao" value="criar_aluno">
+            <label>Matrícula:</label>
+            <input type="text" name="matricula" id="c_matricula" required>
+            <label>Nome:</label>
+            <input type="text" name="nome" id="c_nome" required>
+            <label>Email:</label>
+            <input type="email" name="email" id="c_email" placeholder="exemplo@dominio.com" required>
+            <input type="button" value="Cadastrar Aluno" onclick="criarAluno()">
+        </form>
+    </div>
+
+    <div id="form-editar" style="display:none;">
+        <h2>Editar Aluno</h2>
+        <form name="formEditarAluno" id="formEditarAluno">
+            <input type="hidden" name="acao" value="salvar_edicao">
+            <input type="hidden" name="matricula_original" id="e_matricula_original">
+
+            <label>Matrícula:</label>
+            <input type="text" name="matricula" id="e_matricula" required>
+            <label>Nome:</label>
+            <input type="text" name="nome" id="e_nome" required>
+            <label>Email:</label>
+            <input type="email" name="email" id="e_email" required>
+
+            <input type="button" value="Salvar Alterações" onclick="salvarEdicao()" class="btn-editar">
+            <input type="button" value="Cancelar" onclick="cancelarEdicao()" class="btn-cancelar">
+        </form>
+    </div>
+
+    <h2>Lista de Alunos Cadastrados</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Matrícula</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaAlunosBody">
+            <tr>
+                <td colspan="4">Carregando...</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        const arquivo_php = "crud_alunos.php";
+        const msgDiv = document.getElementById("msg");
+
+        function fazerRequisicao(metodo, url, params, callback) {
+            let xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        try {
+                            let respostaJson = JSON.parse(this.responseText);
+                            callback(respostaJson, null);
+                        } catch (e) {
+                            console.error("Erro ao parsear JSON:", this.responseText);
+                            callback(null, "Erro de resposta do servidor.");
+                        }
+                    } else {
+                        console.error("Requisicao falhou: " + this.status);
+                        callback(null, "Erro " + this.status + " ao contatar o servidor.");
+                    }
+                }
+            }
+
+            if (metodo.toUpperCase() === "POST") {
+                xmlhttp.open("POST", url, true);
+                xmlhttp.send(params);
+            } else {
+                xmlhttp.open("GET", url + "?" + params, true);
+                xmlhttp.send();
+            }
+        }
+
+        //LISTAR 
+        function listarAlunos() {
+            fazerRequisicao("GET", arquivo_php, "acao=listar", function (resposta, erro) {
+                if (erro) {
+                    exibirMensagem(erro, 'erro');
+                    return;
+                }
+
+                let tbody = document.getElementById("tabelaAlunosBody");
+                tbody.innerHTML = "";
+
+                if (resposta.sucesso && resposta.dados.length > 0) {
+                    resposta.dados.forEach(aluno => {
+                        let tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>${aluno.matricula}</td>
+                            <td>${aluno.nome}</td>
+                            <td>${aluno.email}</td>
+                            <td>
+                                <a onclick="mostrarFormEdicao('${aluno.matricula}')">Editar</a> |
+                                <a onclick="excluirAluno('${aluno.matricula}')">Excluir</a>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else if (resposta.sucesso) {
+                    tbody.innerHTML = "<tr><td colspan='4'>Nenhum aluno cadastrado ainda.</td></tr>";
+                } else {
+                    exibirMensagem(resposta.msg || "Erro ao listar alunos.", 'erro');
+                }
+            });
+        }
+
+        //CRIAR 
+        function criarAluno() {
+            let form = document.getElementById("formCriarAluno");
+            let formData = new FormData(form);
+
+            if (formData.get("matricula").trim() === "") {
+                exibirMensagem("Matrícula é obrigatória.", "erro");
+                return;
+            }
+
+            fazerRequisicao("POST", arquivo_php, formData, function (resposta, erro) {
+                if (erro || !resposta.sucesso) {
+                    exibirMensagem(resposta ? resposta.msg : erro, 'erro');
+                } else {
+                    exibirMensagem(resposta.msg, 'sucesso');
+                    form.reset();
+                    listarAlunos();
+                }
+            });
+        }
+
+        //EXCLUIR 
+        function excluirAluno(matricula) {
+            if (!confirm("Tem certeza que deseja excluir o aluno com matrícula " + matricula + "?")) {
+                return;
+            }
+
+            let params = "acao=excluir&matricula=" + matricula;
+            fazerRequisicao("GET", arquivo_php, params, function (resposta, erro) {
+                if (erro || !resposta.sucesso) {
+                    exibirMensagem(resposta ? resposta.msg : erro, 'erro');
+                } else {
+                    exibirMensagem(resposta.msg, 'sucesso');
+                    listarAlunos();
+                }
+            });
+        }
+
+        //MOSTRAR FORM DE EDIÇÃO 
+        function mostrarFormEdicao(matricula) {
+            let params = "acao=buscar_um&matricula=" + matricula;
+
+            fazerRequisicao("GET", arquivo_php, params, function (resposta, erro) {
+                if (erro || !resposta.sucesso) {
+                    exibirMensagem(resposta ? resposta.msg : erro, 'erro');
+                    return;
+                }
+
+                let aluno = resposta.dados;
+                document.getElementById("e_matricula_original").value = aluno.matricula;
+                document.getElementById("e_matricula").value = aluno.matricula;
+                document.getElementById("e_nome").value = aluno.nome;
+                document.getElementById("e_email").value = aluno.email;
+
+                document.getElementById("form-criar").style.display = "none";
+                document.getElementById("form-editar").style.display = "block";
+                window.scrollTo(0, 0);
+            });
+        }
+
+        //SALVAR EDIÇÃO
+        function salvarEdicao() {
+            let form = document.getElementById("formEditarAluno");
+            let formData = new FormData(form);
+
+            fazerRequisicao("POST", arquivo_php, formData, function (resposta, erro) {
+                if (erro || !resposta.sucesso) {
+                    exibirMensagem(resposta ? resposta.msg : erro, 'erro');
+                } else {
+                    exibirMensagem(resposta.msg, 'sucesso');
+                    listarAlunos();
+                    cancelarEdicao();
+                }
+            });
+        }
+
+
+        function cancelarEdicao() {
+            document.getElementById("form-editar").style.display = "none";
+            document.getElementById("form-criar").style.display = "block";
+            document.getElementById("formEditarAluno").reset();
+        }
+
+        function exibirMensagem(texto, tipo) {
+            msgDiv.innerHTML = texto;
+            msgDiv.className = "msg " + tipo;
+            setTimeout(() => { msgDiv.innerHTML = ""; msgDiv.className = "msg"; }, 3000);
+        }
+    </script>
+</body>
+
+</html>
